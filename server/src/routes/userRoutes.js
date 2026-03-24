@@ -6,7 +6,6 @@ import {
     updateUser,
     deleteUser
 } from "../controllers/userController.js";
-import validateUser from "../middlewares/inputValidator.js";
 
 const router = Router();
 

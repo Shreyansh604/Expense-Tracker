@@ -4,36 +4,37 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {
     createUser,
     findUserByEmail,
+    findUserById,
     removeRefreshToken,
     saveRefreshToken,
+    updateRefreshToken,
 } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { generateAccessToken, generateRefreshToken } from "../utils/tokens.js";
 
-// 🔐 Generate tokens
-const generateAccessToken = (user) => {
-    return jwt.sign(
-        {
-            id: user.id,
-            email: user.email
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m"
-        }
-    );
-};
+const generateAccessAndRefreshTokens = async (userId) => {
+    try {
+        const user = await findUserById(userId);
 
-const generateRefreshToken = (user) => {
-    return jwt.sign(
-        {
-            id: user.id
-        },
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d"
+        if (!user) {
+            throw new ApiError(404, "User not found");
         }
-    );
+
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        // Save refresh token in DB
+        await updateRefreshToken(user.id, refreshToken);
+
+        return { accessToken, refreshToken };
+
+    } catch (error) {
+        throw new ApiError(
+            500,
+            "Something went wrong while generating refresh and access token"
+        );
+    }
 };
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -110,6 +111,36 @@ const logoutUser = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, "Logged out successfully")
     )
-})
+});
 
-export { registerUser, loginUser, logoutUser };
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await findUserById(req.user?.id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // verify old password
+    const isValid = await isPasswordCorrect(
+        oldPassword,
+        user.password
+    );
+
+    if (!isValid) {
+        throw new ApiError(401, "Old password is incorrect");
+    }
+
+    // hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // update in DB
+    await updateUserPassword(user.id, hashedPassword);
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Password Update Successfully")
+    );
+});
+
+export { registerUser, loginUser, logoutUser, changeCurrentPassword, generateAccessAndRefreshTokens };
