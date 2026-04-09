@@ -7,7 +7,6 @@ import {
     findUserById,
     removeRefreshToken,
     saveRefreshToken,
-    updateRefreshToken,
 } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -25,7 +24,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         const refreshToken = generateRefreshToken(user);
 
         // Save refresh token in DB
-        await updateRefreshToken(user.id, refreshToken);
+        await saveRefreshToken(user.id, refreshToken);
 
         return { accessToken, refreshToken };
 
@@ -38,10 +37,10 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { userName, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     //basic check
-    if (!userName || !email || !password) {
+    if (!name || !email || !password) {
         throw new ApiError(400, "All fields are required");
     }
 
@@ -56,7 +55,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // save user
     const user = await createUser({
-        userName,
+        name,
         email,
         password: hashedPassword,
     });
@@ -65,8 +64,8 @@ const registerUser = asyncHandler(async (req, res) => {
     delete user.password;
 
     return res
-        .status(200)
-        .json(new ApiResponse(200, user, "User created successfully"));
+        .status(201)
+        .json(new ApiResponse(201, user, "User created successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -123,7 +122,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     }
 
     // verify old password
-    const isValid = await isPasswordCorrect(
+    const isValid = await bcrypt.compare(
         oldPassword,
         user.password
     );

@@ -1,10 +1,13 @@
 import { transactionSchema } from "../validators/inputValidator";
-import { createTransaction, getTransactions } from "../models/transationModel";
+import { createTransaction, getTransactionById } from "../models/transactionModel";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 
 const createTransactioncontroller = asyncHandler(async (req, res) => {
+
+    const { error, value } = transactionSchema.validate(req.body);
+    if (error) throw new ApiError(400, error.message);
 
     const transaction = await createTransaction({
         user_id: req.user.id,
@@ -17,7 +20,7 @@ const createTransactioncontroller = asyncHandler(async (req, res) => {
 });
 
 const getTransactionById = asyncHandler(async (req, res) => {
-    const id = req.params;
+    const { id } = req.params;
 
     if(!id) {
         throw new ApiError(400, "transaction ID is required");

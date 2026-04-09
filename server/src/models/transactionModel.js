@@ -32,6 +32,12 @@ const getTransactions = async (userId) => {
   return result.rows;
 };
 
+const getTransactionById = async (id) => {
+  const query = `SELECT * FROM transactions WHERE id = $1`;
+  const result = await pool.query(query, [id]);
+  return result.rows[0]; // single row
+};
+
 const updateTransaction = async (id, data) => {
   const query = `
     UPDATE transactions
@@ -72,6 +78,7 @@ const deleteTransaction = async (id) => {
 export {
     createTransaction,
     getTransactions,
+    getTransactionById,
     updateTransaction,
     deleteTransaction
 }
