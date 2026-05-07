@@ -3,8 +3,8 @@ import pool from "../db/db.js";
 const createTransaction = async(data) => {
     const query = `
         INSERT INTO transactions
-        (user_id, amount, type, category_id, description, date)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        (user_id, amount, type, category_id, description)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
     `;
 
