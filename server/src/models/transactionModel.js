@@ -3,7 +3,7 @@ import pool from "../db/db.js";
 const createTransaction = async(data) => {
     const query = `
         INSERT INTO transactions
-        (users_id, amount, type, category_id, description, date)
+        (user_id, amount, type, category_id, description, date)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *;
     `;
@@ -12,16 +12,16 @@ const createTransaction = async(data) => {
         data.user_id,
         data.amount,
         data.type,
-        data.category_id,
+        data.category_id || null,
         data.description,
-        data.date,
+        //removed date
     ];
 
   const result = await pool.query(query, values);
   return result.rows[0];
 };
 
-const getTransactions = async (userId) => {
+const getAllTransactions = async (userId) => {
   const query = `
     SELECT * FROM transactions
     WHERE user_id = $1
@@ -64,21 +64,21 @@ const updateTransaction = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteTransaction = async (id) => {
-  const query = `
-    DELETE FROM transactions
-    WHERE id = $1
-    RETURNING *;
-  `;
-
-  const result = await pool.query(query, [id]);
+const deleteTransactionModel = async (id) => {
+  const result = await pool.query(`
+      DELETE FROM transactions
+      WHERE id = $1
+      RETURNING *;
+    `,
+    [id]
+  );
   return result.rows[0];
 };
 
 export {
     createTransaction,
-    getTransactions,
+    getAllTransactions,
     getTransactionById,
     updateTransaction,
-    deleteTransaction
+    deleteTransactionModel
 }

@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import jwt from "jsonwebtoken"
-import { User } from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import { findUserById } from "../models/userModel.js";
 
 export const verifyJWT = asyncHandler(async(req, _, next) => {
     try {
@@ -13,16 +13,8 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
         }
     
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-    
-        // Fetch user from PostgreSQL
-        const result = await pool.query(
-            `SELECT id, email, userName 
-             FROM users 
-             WHERE id = $1`,
-            [decodedToken._id]
-        );
 
-        const user = result.rows[0];
+        const user = await findUserById(decodedToken.id); // findUserById instead of raw pool query
     
         if (!user) {
             
@@ -33,6 +25,5 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
         next()
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid access token")
-    }
-    
+    } 
 })

@@ -2,7 +2,7 @@ import pool from "../db/db.js";
 
 export const createUser = async ({ name, email, password }) => {
     const result = await pool.query(
-        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email",
+        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at",
         [name, email, password]
     );
 
@@ -20,7 +20,7 @@ export const findUserByEmail = async (email) => {
 
 export const findUserById = async (userId) => {
     const result = await pool.query(
-        `SELECT id, email, name, refresh_token 
+        `SELECT id, email, name, password, refresh_token 
          FROM users 
          WHERE id = $1`,
         [userId]

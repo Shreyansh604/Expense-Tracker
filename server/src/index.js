@@ -1,36 +1,23 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import pool from "./config/db.js";
+import pool from "./db/db.js";
 import userRoutes from "./routes/userRoutes.js";
-import createUserTable from "./data/createUseTable.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 5001;
 
 //Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // Routes
-app.use("/api", userRoutes);
-
-// Error handling middleware
-
-// Create table before starting server
-createUserTable();
-
-// Testing POSTGRES
-app.get("/", async (req, res, next) => {
-    try {
-        const result = await pool.query("SELECT current_database()");
-        res.send(`The database name is : ${result.rows[0].current_database}`);
-    } catch (err) {
-        next(err);
-    }
-});
+app.use("/api/auth", userRoutes);
+app.use("/api", transactionRoutes);
 // Server running
 
 app.listen(port, ()=> {

@@ -8,5 +8,12 @@ export const transactionSchema = Joi.object({
 
     category_id: Joi.number().integer().optional(),
     description: Joi.string().allow("").optional(),
-    date: Joi.date().required()
+    // removed date
+});
+
+export const updateTransactionSchema = Joi.object({
+    amount: Joi.number().positive().optional(),
+    type: Joi.string().valid("income", "expense").optional(),
+    category_id: Joi.number().integer().allow(null).optional(),
+    description: Joi.string().allow("").optional(),
 });
