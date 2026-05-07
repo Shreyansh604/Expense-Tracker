@@ -17,7 +17,7 @@ export const registerUser = createAsyncThunk(
     "auth/registerUser",
     async(data, {rejectWithValue}) => {
         try {
-            const response = await api.post("auth/register", data);
+            const response = await api.post("/auth/register", data);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || "Registration failed");
@@ -27,7 +27,7 @@ export const registerUser = createAsyncThunk(
 
 const initialState = {
   user: null,
-  token: null,
+  accessToken: localStorage.getItem("accessToken") || null,
   isLoading: false,
   error: null,
 };
@@ -38,7 +38,8 @@ const authSlice = createSlice({
     reducers: {
         logout: (state) => {
             state.user = null;
-            state.token = null;
+            state.accessToken = null;
+            localStorage.removeItem("accessToken");
         },
     },
 
@@ -51,14 +52,14 @@ const authSlice = createSlice({
             })
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.user = action.payload.user;
-                state.token = action.payload.accessToken;
+                state.user = action.payload.data.user;
+                state.accessToken = action.payload.data.accessToken;
 
-                localStorage.setItem("token", action.payload.accessToken);
+                localStorage.setItem("accessToken", action.payload.data.accessToken);
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.payload;
+                state.error = action.payload?.data || "Something went wrong";
             })
             // REGISTER
             .addCase(registerUser.pending, (state) => {
@@ -67,11 +68,11 @@ const authSlice = createSlice({
             })
             .addCase(registerUser.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.user = action.payload.user;
+                state.user = action.payload.data.user;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.payload;
+                state.error = action.payload?.data || "Something went wrong";
             });
     },
 });
