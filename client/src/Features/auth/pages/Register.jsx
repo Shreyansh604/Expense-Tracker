@@ -1,0 +1,136 @@
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { registerUser } from "../authSlice";
+import { Eye, EyeClosed } from "lucide-react";
+
+const Register = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isLoading, error } = useSelector((state) => state.auth);
+  const [localError, setLocalError] = useState(null);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLocalError(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setLocalError("Passwords do not match");
+      return;
+    }
+
+    const { confirmPassword, ...dataToSend } = formData;
+    const result = await dispatch(registerUser(dataToSend));
+
+    if (registerUser.fulfilled.match(result)) {
+      navigate("/login");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center">
+      <div className="w-[380px] bg-white rounded-lg px-10 py-8">
+        <div className="text-center mb-7">
+          <span className="text-3xl font-bold text-[#f89f1b]">
+            expense<span className="text-[#1a1a2e]">tracker</span>
+          </span>
+          <p className="text-sm text-gray-400 mt-1">Create your account</p>
+        </div>
+
+        {(localError || error) && (
+          <p className="text-red-500 text-sm mb-4">{localError || error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Username"
+            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#f89f1b] hover:border-gray-400 transition-colors"
+          />
+
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#f89f1b] hover:border-gray-400 transition-colors"
+          />
+
+          {/* Password */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#f89f1b] hover:border-gray-400 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? <Eye size={16}/> : <EyeClosed size={16}/>}
+            </button>
+          </div>
+
+          {/* Confirm password */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm password"
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#f89f1b] hover:border-gray-400 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              {showConfirmPassword ? <Eye size={16}/> : <EyeClosed size={16}/>}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-2.5 bg-[#f89f1b] text-white rounded-md text-sm font-semibold mt-2"
+          >
+            {isLoading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
+
+        <p className="text-center text-sm text-gray-400 mt-5">
+          Already have an account?{" "}
+          <a href="/login" className="text-[#f89f1b] font-medium">
+            Sign in
+          </a>
+        </p>
+
+      </div>
+    </div>
+  );
+};
+
+export default Register;

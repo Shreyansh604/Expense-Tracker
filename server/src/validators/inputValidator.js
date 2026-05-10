@@ -6,7 +6,7 @@ export const transactionSchema = Joi.object({
         .valid("income", "expense")
         .required(),
 
-    category_id: Joi.number().integer().optional(),
+    category_id: Joi.number().integer().allow(null).optional(),
     description: Joi.string().allow("").optional(),
     // removed date
 });

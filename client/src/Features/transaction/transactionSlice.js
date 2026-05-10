@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../services/axios";
 
 export const fetchTransactions = createAsyncThunk(
-    "/transactions/fetchAll",
+    "transactions/fetchAll",
     async(_, {rejectWithValue}) => {
         try {
             const response = await api.get("/transactions");
@@ -14,7 +14,7 @@ export const fetchTransactions = createAsyncThunk(
 );
 
 export const createTransaction = createAsyncThunk(
-    "/transactions/create",
+    "transactions/create",
     async(data, {rejectWithValue}) => {
         try {
             const response = await api.post("/transactions", data);
@@ -26,7 +26,7 @@ export const createTransaction = createAsyncThunk(
 );
 
 export const updateTransaction = createAsyncThunk(
-    "/transactions/update",
+    "transactions/update",
     async({id, data}, {rejectWithValue}) => {
         try {
             const response = await api.put(`/transactions/${id}`, data);
@@ -38,7 +38,7 @@ export const updateTransaction = createAsyncThunk(
 );
 
 export const deleteTransaction = createAsyncThunk(
-    "/transactions/delete",
+    "transactions/delete",
     async(id, {rejectWithValue}) => {
         try {
             const response = await api.delete(`/transactions/${id}`);
@@ -83,6 +83,7 @@ const transactionSlice = createSlice({
                 state.error = null;
             })
             .addCase(createTransaction.fulfilled, (state, action) => {
+                console.log("create payload:", action.payload);
                 state.isLoading = false;
                 state.transactions.push(action.payload.data);
             })

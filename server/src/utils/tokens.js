@@ -8,7 +8,7 @@ export const generateAccessToken = (user) => {
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m"
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "1d"
         }
     );
 };

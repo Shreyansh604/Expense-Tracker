@@ -13,8 +13,8 @@ CREATE TABLE transactions (
   user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   category_id INT REFERENCES categories(id) ON DELETE SET NULL,
   description VARCHAR(255),
-  type        VARCHAR(10) CHECK (type IN ('income', 'expense')),
-  amount      DECIMAL(10,2) NOT NULL,
+  type        VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense')),
+  amount      DECIMAL(10,2) NOT NULL CHECK (amount > 0),
   date        TIMESTAMP DEFAULT NOW(),
   created_at  TIMESTAMP DEFAULT NOW(),
   updated_at  TIMESTAMP DEFAULT NOW()
@@ -23,7 +23,8 @@ CREATE TABLE transactions (
 CREATE TABLE categories (
   id      SERIAL PRIMARY KEY,
   user_id INT REFERENCES users(id) ON DELETE CASCADE,
-  name    VARCHAR(100) NOT NULL UNIQUE  -- 'Food', 'Travel', 'Entertainment'
+  name    VARCHAR(100) NOT NULL,
+  CONSTRAINT unique_user_category UNIQUE (user_id, name)
 );
 
 CREATE OR REPLACE FUNCTION update_timestamp()

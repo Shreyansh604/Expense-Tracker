@@ -1,10 +1,11 @@
 import "./App.css";
-import Layout from "./components/Layout";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import DashBoard from "./features/dashboard/pages/DashBoard";
-import Login from "./features/auth/pages/Login";
-// import Register from "./features/auth/pages/Register";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout.jsx";
+import DashBoard from "./features/dashboard/pages/DashBoard.jsx";
+import Login from "./features/auth/pages/Login.jsx";
+import Register from "./features/auth/pages/Register.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Transactions from "./features/transaction/pages/Transactions.jsx";
 
 function App() {
   return (
@@ -12,13 +13,14 @@ function App() {
       <Routes>
         {/* public routes */}
         <Route path="/login" element={<Login />} />
-        {/* <Route path="/register" element={<Register />} /> */}
+        <Route path="/register" element={<Register />} />
 
         {/* protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashBoard />} />
+            <Route path="/transactions" element={<Transactions />} />
           </Route>
         </Route>
       </Routes>

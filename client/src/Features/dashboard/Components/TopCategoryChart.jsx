@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const COLORS = ["#f89f1b", "#22c55e", "#3b82f6", "#ef4444", "#a855f7"];
 
-const TopCategoryChart = () => {
+const TopCategoryChart = ({ categories = [] }) => {
   const { transactions } = useSelector((state) => state.transactions);
   const [view, setView] = useState("bar"); // "bar" | "pie"
 
@@ -15,15 +15,14 @@ const TopCategoryChart = () => {
   const categoryMap = {};
 
   expenses.forEach((t) => {
-    const cat = t.category || "Other";
-    categoryMap[cat] = (categoryMap[cat] || 0) + parseFloat(t.amount);
+    const categoryName = categories.find(c => c.id === t.category_id)?.name || "Other";
+    categoryMap[categoryName] = (categoryMap[categoryName] || 0) + parseFloat(t.amount);
   });
 
   // 3. convert to array
-  const data = Object.entries(categoryMap).map(([category, amount]) => ({
-    category,
-    amount,
-  }));
+  const data = Object.entries(categoryMap)
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
 
   // 4. sort
   data.sort((a, b) => b.amount - a.amount);
@@ -105,49 +104,3 @@ const PieView = ({ data }) => {
     </div>
   );
 };
-
-// import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-
-// const data = [
-//   { name: "Food", value: 400 },
-//   { name: "Transport", value: 200 },
-//   { name: "Shopping", value: 300 },
-//   { name: "Bills", value: 150 },
-//   { name: "Health", value: 100 },
-// ];
-
-// const COLORS = ["#6366f1", "#22d3ee", "#f59e0b", "#10b981", "#f43f5e"];
-
-// const TopCategoryChart = () => {
-//   return (
-//     <ResponsiveContainer width="100%" height={220}>
-//       <PieChart>
-//         <Pie
-//           data={data}
-//           cx="50%"
-//           cy="50%"
-//           innerRadius={60}
-//           outerRadius={90}
-//           paddingAngle={4}
-//           dataKey="value"
-//         >
-//           {data.map((entry, index) => (
-//             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-//           ))}
-//         </Pie>
-//         <Tooltip
-//           contentStyle={{ backgroundColor: "#1d1d1d", border: "1px solid #404040", borderRadius: "8px" }}
-//           labelStyle={{ color: "#fff" }}
-//           itemStyle={{ color: "#ccc" }}
-//         />
-//         <Legend
-//           iconType="circle"
-//           iconSize={8}
-//           formatter={(value) => <span style={{ color: "#9ca3af", fontSize: "12px" }}>{value}</span>}
-//         />
-//       </PieChart>
-//     </ResponsiveContainer>
-//   );
-// };
-
-// export default TopCategoryChart;

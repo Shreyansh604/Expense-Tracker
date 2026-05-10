@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import pool from "./db/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 dotenv.config();
 
@@ -20,7 +21,8 @@ app.use(cors({
 
 // Routes
 app.use("/api/auth", userRoutes);
-app.use("/api", transactionRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/categories", categoryRoutes);
 // Server running
 
 app.listen(port, ()=> {
