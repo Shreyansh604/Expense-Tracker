@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../authSlice";
+import { registerUser } from "../authSlice.js";
 import { Eye, EyeClosed } from "lucide-react";
 
 const Register = () => {

@@ -23,8 +23,20 @@ app.use(cors({
 app.use("/api/auth", userRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/categories", categoryRoutes);
-// Server running
 
+// Global error handler
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    
+    return res.status(statusCode).json({
+        success: false,
+        statusCode,
+        message
+    });
+});
+
+// Server running
 app.listen(port, ()=> {
     console.log(`Server is running at port: ${port}`)
 })

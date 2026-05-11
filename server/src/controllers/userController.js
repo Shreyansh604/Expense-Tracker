@@ -8,6 +8,8 @@ import {
     removeRefreshToken,
     updateUserPassword,
     saveRefreshToken,
+    deleteUserById,
+    updateUserProfile,
 } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokens.js";
@@ -175,10 +177,41 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     );
 });
 
+const deleteAccount = asyncHandler(async (req, res) => {
+    await deleteUserById(req.user.id);
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Account deleted successfully")
+    );
+});
+
+const updateProfile = asyncHandler(async (req, res) => {
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+        throw new ApiError(400, "Name and email are required");
+    }
+
+    const existing = await findUserByEmail(email);
+    // console.log("existing:", existing);
+    // console.log("req.user.id:", req.user.id);
+
+    if (existing && Number(existing.id) !== Number(req.user.id)) {
+        throw new ApiError(400, "Email already in use");
+    }
+
+    const updatedUser = await updateUserProfile(req.user.id, { name, email });
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "Profile updated successfully")
+    );
+});
+
 export { 
     registerUser, 
     loginUser, 
     logoutUser, 
     changeCurrentPassword, 
-    refreshAccessToken 
+    refreshAccessToken,
+    deleteAccount,
+    updateProfile
 };

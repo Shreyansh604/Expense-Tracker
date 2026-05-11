@@ -41,6 +41,9 @@ const authSlice = createSlice({
             state.accessToken = null;
             localStorage.removeItem("accessToken");
         },
+        updateUser: (state, action) => {
+            state.user = { ...state.user, ...action.payload };
+        }
     },
 
     extraReducers: (builder) => {
@@ -59,7 +62,7 @@ const authSlice = createSlice({
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.payload?.data || "Something went wrong";
+                state.error = action.payload?.message || "Something went wrong";
             })
             // REGISTER
             .addCase(registerUser.pending, (state) => {
@@ -72,10 +75,10 @@ const authSlice = createSlice({
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.payload?.data || "Something went wrong";
+                state.error = action.payload?.message || "Something went wrong";
             });
     },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, updateUser } = authSlice.actions;
 export default authSlice.reducer;

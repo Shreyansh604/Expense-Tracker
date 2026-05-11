@@ -6,6 +6,7 @@ import Login from "./features/auth/pages/Login.jsx";
 import Register from "./features/auth/pages/Register.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Transactions from "./features/transaction/pages/Transactions.jsx";
+import Profile from "./features/profile/pages/Profile.jsx";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashBoard />} />
             <Route path="/transactions" element={<Transactions />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
       </Routes>
