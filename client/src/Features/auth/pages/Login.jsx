@@ -27,6 +27,9 @@ const Login = () => {
     }
   };
 
+  const params = new URLSearchParams(window.location.search);
+  const reason = params.get("reason");
+
   return (
     <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center">
       <div className="w-[400px] bg-white rounded-lg py-10 px-8">
@@ -36,6 +39,11 @@ const Login = () => {
           </span>
         </div>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {reason === "expired" && (
+          <p className="text-amber-400 text-sm mb-4">
+            Your session has expired. Please log in again.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
             type="email"
@@ -60,7 +68,7 @@ const Login = () => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {showPassword ? <Eye size={16}/> : <EyeClosed size={16}/>}
+              {showPassword ? <Eye size={16} /> : <EyeClosed size={16} />}
             </button>
           </div>
           <div className="text-right">
