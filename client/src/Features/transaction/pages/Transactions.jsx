@@ -16,9 +16,11 @@ const Transactions = () => {
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [filterDate, setFilterDate] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const [formData, setFormData] = useState({
     description: "",
@@ -29,8 +31,12 @@ const Transactions = () => {
 
   useEffect(() => {
     dispatch(fetchTransactions());
-    api.get("/categories").then(res => setCategories(res.data.data));
+    api.get("/categories").then((res) => setCategories(res.data.data));
   }, [dispatch]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterType, filterDate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,9 +54,10 @@ const Transactions = () => {
     const dataToSend = {
       ...formData,
       amount: parseFloat(formData.amount),
-      category_id: formData.category_id && formData.category_id !== "" 
-        ? parseInt(formData.category_id) 
-        : null,
+      category_id:
+        formData.category_id && formData.category_id !== ""
+          ? parseInt(formData.category_id)
+          : null,
     };
 
     if (editingTransaction) {
@@ -61,7 +68,6 @@ const Transactions = () => {
       await dispatch(createTransaction(dataToSend));
     }
 
-    setShowForm(false);
     setEditingTransaction(null);
     setFormData({
       description: "",
@@ -79,7 +85,6 @@ const Transactions = () => {
       type: t.type,
       category_id: t.category_id,
     });
-    setShowForm(true);
   };
 
   const handleDelete = (id) => {
@@ -89,7 +94,6 @@ const Transactions = () => {
   };
 
   const handleCancel = () => {
-    setShowForm(false);
     setEditingTransaction(null);
     setFormData({
       description: "",
@@ -101,7 +105,32 @@ const Transactions = () => {
 
   const filtered = transactions
     .filter((t) => filterType === "all" || t.type === filterType)
-    .filter((t) => t.description?.toLowerCase().includes(search.toLowerCase()));
+    .filter((t) => t.description?.toLowerCase().includes(search.toLowerCase()))
+    .filter((t) => {
+      if (filterDate === "all") return true;
+      const date = new Date(t.date);
+      const now = new Date();
+      if (filterDate === "this_month") {
+        return (
+          date.getMonth() === now.getMonth() &&
+          date.getFullYear() === now.getFullYear()
+        );
+      }
+      if (filterDate === "last_month") {
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+        return (
+          date.getMonth() === lastMonth.getMonth() &&
+          date.getFullYear() === lastMonth.getFullYear()
+        );
+      }
+      return true;
+  });
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   if (isLoading) return <div className="p-8 text-white">Loading...</div>;
 
@@ -115,115 +144,10 @@ const Transactions = () => {
             All your income and expenses
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#f89f1b] text-neutral-900 rounded-lg text-xs font-medium"
-        >
-          + Add transaction
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-3 mb-5">
-        <input
-          type="text"
-          placeholder="Search transactions..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-300 focus:outline-none focus:border-[#f89f1b]"
-        />
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="px-3 py-2 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-400 focus:outline-none"
-        >
-          <option value="all">All types</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-      </div>
-
-      {/* Table */}
-      <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 overflow-hidden mb-5">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-neutral-700/50">
-              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                Description
-              </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                Type
-              </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                Date
-              </th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                Amount
-              </th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-6 text-center text-sm text-neutral-500"
-                >
-                  No transactions found
-                </td>
-              </tr>
-            ) : (
-              filtered.map((t) => (
-                <tr
-                  key={t.id}
-                  className="border-b border-neutral-700/30 hover:bg-neutral-700/20"
-                >
-                  <td className="px-4 py-3 text-sm text-neutral-300">
-                    {t.description || "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${t.type === "income" ? "bg-green-400/10 text-green-400" : "bg-red-400/10 text-red-400"}`}
-                    >
-                      {t.type}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-neutral-500">
-                    {new Date(t.date).toLocaleDateString("en-IN")}
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-sm font-medium text-right ${t.type === "income" ? "text-green-400" : "text-red-400"}`}
-                  >
-                    {t.type === "income" ? "+" : "-"}₹
-                    {parseFloat(t.amount).toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleEdit(t)}
-                      className="text-neutral-500 hover:text-[#f89f1b] mr-3 transition-colors"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      className="text-neutral-500 hover:text-red-400 transition-colors"
-                    >
-                      🗑️
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
       </div>
 
       {/* Add / Edit form */}
-      {showForm && (
-        <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 p-5">
+      <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 p-5 mb-6">
           <h2 className="text-sm font-medium text-neutral-200 mb-4">
             {editingTransaction ? "Edit transaction" : "Add transaction"}
           </h2>
@@ -307,6 +231,138 @@ const Transactions = () => {
               </button>
             </div>
           </form>
+        </div>
+
+      {/* Filters */}
+      <div className="flex gap-3 mb-5">
+        <input
+          type="text"
+          placeholder="Search transactions..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-300 focus:outline-none focus:border-[#f89f1b]"
+        />
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="px-3 py-2 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-400 focus:outline-none"
+        >
+          <option value="all">All types</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <select
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          className="px-3 py-2 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-400 focus:outline-none"
+        >
+          <option value="all">All time</option>
+          <option value="this_month">This month</option>
+          <option value="last_month">Last month</option>
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 overflow-hidden mb-5">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-neutral-700/50">
+              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                Description
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                Type
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                Date
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                Category
+              </th>
+              <th className="text-right px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                Amount
+              </th>
+              <th className="text-right px-4 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-4 py-6 text-center text-sm text-neutral-500"
+                >
+                  No transactions found
+                </td>
+              </tr>
+            ) : (
+              paginated.map((t) => (
+                <tr
+                  key={t.id}
+                  className="border-b border-neutral-700/30 hover:bg-neutral-700/20"
+                >
+                  <td className="px-4 py-3 text-sm text-neutral-300">
+                    {t.description || "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${t.type === "income" ? "bg-green-400/10 text-green-400" : "bg-red-400/10 text-red-400"}`}
+                    >
+                      {t.type}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-neutral-500">
+                    {new Date(t.date).toLocaleDateString("en-IN")}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-neutral-500">
+                    {categories.find((c) => c.id === t.category_id)?.name ||
+                      "—"}
+                  </td>
+                  <td
+                    className={`px-4 py-3 text-sm font-medium text-right ${t.type === "income" ? "text-green-400" : "text-red-400"}`}
+                  >
+                    {t.type === "income" ? "+" : "-"}₹
+                    {parseFloat(t.amount).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleEdit(t)}
+                      className="text-neutral-500 hover:text-[#f89f1b] mr-3 transition-colors"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      className="text-neutral-500 hover:text-red-400 transition-colors"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table> 
+      </div>
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4 mb-5">
+          <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-400 disabled:opacity-50">
+            Previous
+          </button>
+          <span className="text-xs text-neutral-500">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 bg-neutral-800 border border-neutral-700/50 rounded-lg text-sm text-neutral-400 disabled:opacity-50">
+            Next
+          </button>
         </div>
       )}
     </div>

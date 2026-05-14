@@ -69,13 +69,20 @@ const DashBoard = () => {
 
   if (isLoading) return <div className="p-8 text-white">Loading...</div>;
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <div className="p-6 w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-lg font-medium text-neutral-100">
-            Good morning, {user?.name || "User"}
+            {getGreeting()}, {user?.name || "User"}
           </h1>
           <p className="text-xs text-neutral-500 mt-0.5">
             {new Date().toLocaleDateString("en-IN", {
@@ -220,12 +227,13 @@ const DashBoard = () => {
       <div className="grid grid-cols-[1.4fr_1fr] gap-4 mb-4">
         <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 p-5">
           <div className="flex justify-between items-center mb-4">
-            <p className="text-sm font-medium text-neutral-200">
-              Recent transactions
+            <p className="text-xs font-medium text-neutral-300">
+              {t.description || "No description"}
             </p>
-            <a href="/transactions" className="text-xs text-[#f89f1b]">
-              View all
-            </a>
+            <p className="text-xs text-neutral-500">
+              {categories.find((c) => c.id === t.category_id)?.name || ""} ·{" "}
+              {new Date(t.date).toLocaleDateString("en-IN")}
+            </p>
           </div>
           <div className="flex flex-col gap-3">
             {recentTransactions.length === 0 ? (
