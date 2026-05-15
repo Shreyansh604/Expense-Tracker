@@ -36,12 +36,12 @@ const Categories = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this category?")) return;
     try {
-      await api.delete(`/categories/${id}`);
-      fetchCategories(); // refresh list
+        await api.delete(`/categories/${id}`);
+        fetchCategories();
     } catch (err) {
-      setError(err.response?.data?.message || "Cannot delete this category");
+        setError(err.response?.data?.message || "Cannot delete this category");
     }
-  };
+};
 
   const globalCategories = categories.filter(c => c.user_id === null);
   const userCategories = categories.filter(c => c.user_id !== null);

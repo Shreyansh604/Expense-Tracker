@@ -8,6 +8,7 @@ const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  console.log("user:", user);
   const { transactions } = useSelector((state) => state.transactions);
 
   const [profileData, setProfileData] = useState({
@@ -41,10 +42,10 @@ const Profile = () => {
     setProfileSuccess(false);
 
     try {
-        await api.put("/auth/update-profile", profileData);
-        dispatch(updateUser(profileData));
+      await api.put("/auth/update-profile", profileData);
+      dispatch(updateUser(profileData));
     } catch (error) {
-        setProfileError(error.response?.data?.message || "Something went wrong");
+      setProfileError(error.response?.data?.message || "Something went wrong");
     }
   };
 

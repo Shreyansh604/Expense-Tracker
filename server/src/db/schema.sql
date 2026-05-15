@@ -8,6 +8,13 @@ CREATE TABLE users (
   refresh_token TEXT
 );
 
+CREATE TABLE categories (
+  id      SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  name    VARCHAR(100) NOT NULL,
+  CONSTRAINT unique_user_category UNIQUE (user_id, name)
+);
+
 CREATE TABLE transactions (
   id          SERIAL PRIMARY KEY,
   user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -18,13 +25,6 @@ CREATE TABLE transactions (
   date        TIMESTAMP DEFAULT NOW(),
   created_at  TIMESTAMP DEFAULT NOW(),
   updated_at  TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE categories (
-  id      SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(id) ON DELETE CASCADE,
-  name    VARCHAR(100) NOT NULL,
-  CONSTRAINT unique_user_category UNIQUE (user_id, name)
 );
 
 CREATE OR REPLACE FUNCTION update_timestamp()

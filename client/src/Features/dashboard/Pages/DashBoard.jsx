@@ -6,6 +6,7 @@ import {
 } from "../../transaction/transactionSlice.js";
 import TopCategoryChart from "../components/TopCategoryChart.jsx";
 import api from "../../../services/axios.js";
+import { Link } from "react-router";
 
 const DashBoard = () => {
   const dispatch = useDispatch();
@@ -65,7 +66,7 @@ const DashBoard = () => {
 
   const recentTransactions = [...transactions]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 4);
+    .slice(0, 5);
 
   if (isLoading) return <div className="p-8 text-white">Loading...</div>;
 
@@ -227,17 +228,21 @@ const DashBoard = () => {
       <div className="grid grid-cols-[1.4fr_1fr] gap-4 mb-4">
         <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 p-5">
           <div className="flex justify-between items-center mb-4">
-            <p className="text-xs font-medium text-neutral-300">
-              {t.description || "No description"}
+            <p className="text-sm font-medium text-neutral-200">
+              Recent transactions
             </p>
-            <p className="text-xs text-neutral-500">
-              {categories.find((c) => c.id === t.category_id)?.name || ""} ·{" "}
-              {new Date(t.date).toLocaleDateString("en-IN")}
-            </p>
+            <Link to="/transactions" className="text-xs text-[#f89f1b]">
+              View all
+            </Link>
           </div>
           <div className="flex flex-col gap-3">
             {recentTransactions.length === 0 ? (
-              <p className="text-xs text-neutral-500">No transactions yet</p>
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                <p className="text-sm text-neutral-400">No transactions yet</p>
+                <p className="text-xs text-neutral-600">
+                  Add your first transaction to get started
+                </p>
+              </div>
             ) : (
               recentTransactions.map((t) => (
                 <div key={t.id} className="flex items-center gap-3">
@@ -255,7 +260,9 @@ const DashBoard = () => {
                       {t.description || "No description"}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      {new Date(t.date).toLocaleDateString("en-IN")}
+                      {categories.find((c) => c.id === t.category_id)?.name ||
+                        ""}{" "}
+                      · {new Date(t.date).toLocaleDateString("en-IN")}
                     </p>
                   </div>
                   <span
@@ -271,7 +278,6 @@ const DashBoard = () => {
         </div>
 
         <div className="bg-neutral-800 rounded-xl border border-neutral-700/50 p-5">
-          {/* <p className="text-sm font-medium text-neutral-200 mb-4">Top category</p> */}
           <TopCategoryChart categories={categories} />
         </div>
       </div>

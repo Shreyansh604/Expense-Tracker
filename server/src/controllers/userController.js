@@ -127,12 +127,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
     //remove password to not give user the access to it
     delete user.password;
+    delete user.refresh_token;
 
     return res.status(200).json(
         new ApiResponse(200, {
             user,
             accessToken,
-            refreshToken
         },
         "Login successful"
     ));

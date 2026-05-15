@@ -20,7 +20,7 @@ export const findUserByEmail = async (email) => {
 
 export const findUserById = async (userId) => {
     const result = await pool.query(
-        `SELECT id, email, name, password, refresh_token 
+        `SELECT id, email, name, password, refresh_token, created_at
          FROM users 
          WHERE id = $1`,
         [userId]
